@@ -106,6 +106,8 @@ pascal = ["tree-sitter-pascal"]
 # would otherwise pull it and silently break DM extraction). uv.lock pins 0.25.1.
 dm = ["tree-sitter-dm>=0.25,<0.26"]
 terraform = ["tree-sitter-hcl"]
+yaml = ["tree-sitter-yaml"]
+toml = ["tree-sitter-toml"]
 # tree-sitter-ocaml ships prebuilt abi3 wheels for every platform, so no C
 # toolchain is needed; kept optional because OCaml is a niche corpus language.
 ocaml = ["tree-sitter-ocaml"]

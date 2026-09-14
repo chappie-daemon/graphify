@@ -69,6 +69,8 @@ from graphify.extractors.go_sql import extract_go_sql  # noqa: F401
 from graphify.extractors.go_env import extract_go_env  # noqa: F401
 from graphify.extractors.go_nats import extract_go_nats  # noqa: F401
 from graphify.extractors.proto import extract_proto  # noqa: F401
+from graphify.extractors.yaml import extract_yaml  # noqa: F401
+from graphify.extractors.toml import extract_toml  # noqa: F401
 from graphify.extractors.json_config import extract_json  # noqa: F401
 from graphify.extractors.commonlisp import extract_commonlisp  # noqa: F401
 from graphify.extractors.markdown import extract_markdown, _MD_LINK_INDEX_CACHE  # noqa: F401
@@ -8681,6 +8683,9 @@ _DISPATCH: dict[str, Any] = {
     ".sh": extract_bash,
     ".bash": extract_bash,
     ".json": extract_json,
+    ".yaml": extract_yaml,
+    ".yml": extract_yaml,
+    ".toml": extract_toml,
     ".tf": extract_terraform,
     ".tfvars": extract_terraform,
     ".hcl": extract_terraform,
@@ -8716,6 +8721,9 @@ _EXTRA_FOR_EXTENSION = {
     ".hrl": "erlang",
     ".escript": "erlang",
     ".sql": "sql",
+    ".yaml": "yaml",
+    ".yml": "yaml",
+    ".toml": "toml",
     ".tf": "terraform",
     ".tfvars": "terraform",
     ".hcl": "terraform",
