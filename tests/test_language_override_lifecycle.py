@@ -185,18 +185,22 @@ def test_watch_declared_code_updates_graph_on_observer_thread(tmp_path, monkeypa
 
 
 def test_watch_document_override_marks_semantic_work_instead_of_rebuilding(tmp_path, monkeypatch):
+    # This fork classifies YAML as CODE because it ships a YAML extractor, so a
+    # language.tpl=yaml override routes the file through the AST path and the
+    # watch loop rebuilds. To keep testing the document path, the override
+    # names a format with no extractor: .ini via language.tpl=ini has no
+    # CONFIG entry in _DISPATCH either, so the file stays a document.
     events = pytest.importorskip("watchdog.events")
-    (tmp_path / ".graphifyrc").write_text("language.tpl=yaml\n")
+    (tmp_path / ".graphifyrc").write_text("language.tpl=html\n")
     source = tmp_path / "notes.tpl"
 
     def change():
-        source.write_text("service: database\n")
+        source.write_text("<p>service database</p>\n")
         return events.FileModifiedEvent(str(source))
 
     drive_watch(tmp_path, monkeypatch, [change])
     assert (tmp_path / "graphify-out" / "needs_update").read_text() == "1"
     assert not (tmp_path / "graphify-out" / "graph.json").exists()
-
 
 @pytest.mark.parametrize("operation", ["create", "modify", "replace", "delete"])
 def test_watch_root_config_lifecycle_rebuilds_and_refreshes_event_mapping(tmp_path, monkeypatch, operation):

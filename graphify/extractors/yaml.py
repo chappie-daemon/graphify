@@ -182,7 +182,9 @@ def _yaml_document_node(
                         "target": target_id,
                         "relation": "references",
                         "confidence": "INFERRED",
-                        "confidence_score": 0.7,
+                        # 0.55 is the rubric's INFERRED floor (the set is
+                        # {0.55, 0.65, 0.75, 0.85, 0.95}); 0.7 was off it.
+                        "confidence_score": 0.55,
                         "source_file": str(path),
                         "source_location": f"L{start_line}",
                     })

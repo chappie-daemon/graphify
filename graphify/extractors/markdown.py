@@ -7,7 +7,7 @@ import unicodedata
 
 from pathlib import Path
 from urllib.parse import unquote
-from graphify.detect import CODE_EXTENSIONS, DOC_EXTENSIONS, classify_file
+from graphify.detect import CODE_EXTENSIONS, CONFIG_EXTENSIONS, DOC_EXTENSIONS, classify_file
 from graphify.extractors.base import _file_stem, _make_id, _read_source_text
 from graphify.security import sanitize_metadata
 
@@ -355,12 +355,16 @@ def _code_span_mention(span: str) -> "tuple[str | None, list[str]] | None":
     if not m:
         return None
     if "." in text:
-        # ``a.b.Name`` is a qualified symbol; ``setup.py`` and ``README.md``
-        # are files. A dotted span whose last segment is a code or document
-        # extension is the latter. Other file-like spans (``pyproject.toml``)
-        # classify as a mention and are rejected at resolution, where the
-        # qualifier ``pyproject`` matches no callable's file or owner.
-        if "." + m.group(1) in CODE_EXTENSIONS or "." + m.group(1) in DOC_EXTENSIONS:
+        # ``a.b.Name`` is a qualified symbol; ``setup.py``, ``README.md`` and
+        # ``pyproject.toml`` are files. A dotted span whose last segment is a
+        # file extension is the latter. This fork classifies YAML and TOML as
+        # code (it ships extractors for both), so CODE_EXTENSIONS alone no
+        # longer separates files from symbols: ``pyproject.toml`` would have
+        # been read as a mention of a ``pyproject`` callable. CONFIG_EXTENSIONS
+        # is checked as well, so the answer does not move again when a config
+        # format changes its bucket.
+        ext = "." + m.group(1)
+        if ext in CODE_EXTENSIONS or ext in DOC_EXTENSIONS or ext in CONFIG_EXTENSIONS:
             return None
         return None, text.rstrip("()").split(".")
     return None, [m.group(1)]

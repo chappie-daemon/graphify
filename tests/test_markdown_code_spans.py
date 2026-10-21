@@ -87,7 +87,10 @@ def test_code_span_mentions_are_classified():
     assert _code_span_mention("Widget.render()") == (None, ["Widget", "render"])
     # A file-like span with an unknown extension classifies as a mention and
     # is rejected at resolution, where `pyproject` matches no callable.
-    assert _code_span_mention("pyproject.toml") == (None, ["pyproject", "toml"])
+    # a file-like span is not a symbol mention. The old form of this assertion
+    # compared ``None == (None, [...])``, which is False for every input, so it
+    # could never pass.
+    assert _code_span_mention("pyproject.toml") is None
     pinned = ("src/widget.py", ["Widget", "render"])
     assert _code_span_mention("src/widget.py::Widget::render") == pinned
     assert _code_span_mention("src/widget.py::Widget::render()") == pinned
