@@ -65,7 +65,11 @@ Only when the path is one or more `https://github.com/...` URLs, or several loca
 ### Step 1 - Ensure graphify is installed
 
 ```powershell
-# Detect Python with graphify — uv/pipx-aware (fixes #831)
+# Uses the chappie-daemon fork, not the PyPI package: it carries the Go-SQL,
+# Go-NATS, Go-Env, Proto, YAML and TOML extractors, which PyPI does not ship.
+$SKILL_SOURCE = 'graphifyy @ git+https://github.com/chappie-daemon/graphify.git@dd48cd808ccf35c8817cda023a4f7b5f2f1ba430'
+# Detect Python WITH THE FORK — the guard imports the fork's own extractors,
+# because upstream's PyPI build also satisfies `import graphify` (fixes #831)
 New-Item -ItemType Directory -Force -Path graphify-out | Out-Null
 $GRAPHIFY_PYTHON = $null
 
@@ -76,7 +80,7 @@ function Find-GraphifyPython {
         if ($uvDir) {
             $py = Join-Path $uvDir "graphifyy\Scripts\python.exe"
             if (Test-Path $py) {
-                & $py -c "import graphify" 2>$null
+                & $py -c "import graphify.extractors.go_nats, graphify.extractors.yaml" 2>$null
                 if ($LASTEXITCODE -eq 0) { return $py }
             }
         }
@@ -87,7 +91,7 @@ function Find-GraphifyPython {
         if ($venvs) {
             $py = Join-Path $venvs "graphifyy\Scripts\python.exe"
             if (Test-Path $py) {
-                & $py -c "import graphify" 2>$null
+                & $py -c "import graphify.extractors.go_nats, graphify.extractors.yaml" 2>$null
                 if ($LASTEXITCODE -eq 0) { return $py }
             }
         }
@@ -95,7 +99,7 @@ function Find-GraphifyPython {
     # 3. Active venv / conda / pip-into-current-env
     $pyCmd = Get-Command python -ErrorAction SilentlyContinue
     if ($pyCmd) {
-        & $pyCmd.Source -c "import graphify" 2>$null
+        & $pyCmd.Source -c "import graphify.extractors.go_nats, graphify.extractors.yaml" 2>$null
         if ($LASTEXITCODE -eq 0) {
             return (& $pyCmd.Source -c "import sys; print(sys.executable)").Trim()
         }
@@ -109,9 +113,9 @@ $GRAPHIFY_PYTHON = Find-GraphifyPython
 # Not found — install then re-detect
 if (-not $GRAPHIFY_PYTHON) {
     if (Get-Command uv -ErrorAction SilentlyContinue) {
-        uv tool install --upgrade graphifyy -q 2>&1 | Select-Object -Last 3
+        uv tool install --upgrade $SKILL_SOURCE -q 2>&1 | Select-Object -Last 3
     } else {
-        pip install graphifyy -q 2>&1 | Select-Object -Last 3
+        pip install $SKILL_SOURCE -q 2>&1 | Select-Object -Last 3
     }
     $GRAPHIFY_PYTHON = Find-GraphifyPython
 }
