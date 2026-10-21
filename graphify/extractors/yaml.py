@@ -334,9 +334,9 @@ def extract_yaml(path: Path, *, content: bytes | None = None) -> dict:
     Returns a dict with keys: nodes, edges.
     """
     if not _HAS_PYYAML:
-        raise ImportError(
-            "PyYAML not installed. Install it with: pip install pyyaml"
-        )
+        # A missing optional grammar yields no nodes, never a crash: one
+        # unparseable extension must not abort a whole graph build.
+        return {"nodes": [], "edges": []}
 
     try:
         source_bytes = content if content is not None else path.read_bytes()

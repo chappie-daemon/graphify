@@ -56,10 +56,9 @@ def extract_toml(path: Path, *, content: bytes | None = None) -> dict:
     Returns a dict with keys: nodes, edges.
     """
     if not _HAS_TOML:
-        raise ImportError(
-            "tree-sitter-toml not installed. "
-            'Install it with: pip install "graphifyy[toml]"'
-        )
+        # A missing optional grammar yields no nodes, never a crash: one
+        # unparseable extension must not abort a whole graph build.
+        return {"nodes": [], "edges": []}
 
     try:
         source = content if content is not None else path.read_bytes()
